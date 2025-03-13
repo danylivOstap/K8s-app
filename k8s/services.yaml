@@ -1,0 +1,88 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: authorpersistence
+  namespace: my-app
+spec:
+  selector:
+    app: authorpersistence
+  ports:
+    - protocol: TCP
+      port: 8282
+      targetPort: 8080
+  type: ClusterIP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: bookpersistence
+  namespace: my-app
+spec:
+  selector:
+    app: bookpersistence
+  ports:
+    - protocol: TCP
+      port: 8181
+      targetPort: 8080
+  type: ClusterIP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: bookpublisher
+  namespace: my-app
+spec:
+  selector:
+    app: bookpublisher
+  ports:
+    - protocol: TCP
+      port: 8080
+      targetPort: 8080
+  type: ClusterIP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: broker
+  namespace: my-app
+spec:
+  selector:
+    app: broker
+  ports:
+    - name: kafka-plaintext
+      protocol: TCP
+      port: 9092
+      targetPort: 9092
+    - name: kafka-internal
+      protocol: TCP
+      port: 29092
+      targetPort: 29092
+  type: ClusterIP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: notifications
+  namespace: my-app
+spec:
+  selector:
+    app: notifications
+  ports:
+    - protocol: TCP
+      port: 8383
+      targetPort: 8080
+  type: ClusterIP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: zookeeper
+  namespace: my-app
+spec:
+  selector:
+    app: zookeeper
+  ports:
+    - protocol: TCP
+      port: 2181
+      targetPort: 2181
+  type: ClusterIP

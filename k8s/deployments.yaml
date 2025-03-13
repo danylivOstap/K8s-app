@@ -1,0 +1,174 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: authorpersistence
+  namespace: my-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: authorpersistence
+  template:
+    metadata:
+      labels:
+        app: authorpersistence
+    spec:
+      containers:
+        - name: authorpersistence
+          image: o2407/authorpersistence:latest
+          ports:
+            - containerPort: 8080
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: "production"
+            - name: OD_KAFKA_NOTIFICATION_TOPIC
+              value: "notification.created"
+            - name: SPRING_KAFKA_BOOTSTRAP_SERVERS
+              value: "broker:29092"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bookpersistence
+  namespace: my-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: bookpersistence
+  template:
+    metadata:
+      labels:
+        app: bookpersistence
+    spec:
+      containers:
+        - name: bookpersistence
+          image: o2407/bookpersistence:latest
+          ports:
+            - containerPort: 8080
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: "production"
+            - name: OD_KAFKA_NOTIFICATION_TOPIC
+              value: "notification.created"
+            - name: SPRING_KAFKA_BOOTSTRAP_SERVERS
+              value: "broker:29092"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bookpublisher
+  namespace: my-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: bookpublisher
+  template:
+    metadata:
+      labels:
+        app: bookpublisher
+    spec:
+      containers:
+        - name: bookpublisher
+          image: o2407/bookpublisher:latest
+          ports:
+            - containerPort: 8080
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: "production"
+            - name: OD_KAFKA_TOPIC
+              value: "books.published"
+            - name: SPRING_KAFKA_BOOTSTRAP_SERVERS
+              value: "broker:29092"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: broker
+  namespace: my-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: broker
+  template:
+    metadata:
+      labels:
+        app: broker
+    spec:
+      containers:
+        - name: broker
+          image: confluentinc/cp-kafka:7.3.0
+          ports:
+            - containerPort: 9092
+            - containerPort: 29092
+          env:
+            - name: KAFKA_BROKER_ID
+              value: "1"
+            - name: KAFKA_ZOOKEEPER_CONNECT
+              value: "zookeeper:2181"
+            - name: KAFKA_LISTENER_SECURITY_PROTOCOL_MAP
+              value: "PLAINTEXT:PLAINTEXT,PLAINTEXT_INTERNAL:PLAINTEXT"
+            - name: KAFKA_ADVERTISED_LISTENERS
+              value: "PLAINTEXT://localhost:9092,PLAINTEXT_INTERNAL://broker:29092"
+            - name: KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR
+              value: "1"
+            - name: KAFKA_TRANSACTION_STATE_LOG_MIN_ISR
+              value: "1"
+            - name: KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR
+              value: "1"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: notifications
+  namespace: my-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: notifications
+  template:
+    metadata:
+      labels:
+        app: notifications
+    spec:
+      containers:
+        - name: notifications
+          image: o2407/notifications:latest
+          ports:
+            - containerPort: 8080
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: "production"
+            - name: OD_KAFKA_TOPIC
+              value: "notification.created"
+            - name: SPRING_KAFKA_BOOTSTRAP_SERVERS
+              value: "broker:29092"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: zookeeper
+  namespace: my-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: zookeeper
+  template:
+    metadata:
+      labels:
+        app: zookeeper
+    spec:
+      containers:
+        - name: zookeeper
+          image: confluentinc/cp-zookeeper:7.3.0
+          ports:
+            - containerPort: 2181
+          env:
+            - name: ZOOKEEPER_CLIENT_PORT
+              value: "2181"
+            - name: ZOOKEEPER_TICK_TIME
+              value: "2000"
